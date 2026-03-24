@@ -1,8 +1,7 @@
 from rest_framework import viewsets, permissions
-
-from .models import Project, Wall, Element
+from .models import Project, Element
 from .permissions import CheckProjectLimit
-from .serializers import ProjectSerializer, WallSerializer, ElementSerializer
+from .serializers import ProjectSerializer, ElementSerializer
 
 
 class IsProjectOwner(permissions.BasePermission):
@@ -12,21 +11,9 @@ class IsProjectOwner(permissions.BasePermission):
             return False
 
         if isinstance(obj, Project):
-            return str(obj.owner_id) == str(current_owner_id)
+            return str(obj.owner) == str(current_owner_id)
 
-        return str(obj.project.owner_id) == str(current_owner_id)
-
-
-class WallViewSet(viewsets.ReadOnlyModelViewSet):
-    serializer_class = WallSerializer
-    permission_classes = [IsProjectOwner]
-
-    def get_queryset(self):
-        project_id = self.request.query_params.get('project_id')
-        return Wall.objects.filter(
-            project_id=project_id,
-            project__owner_id=self.request.owner_id
-        )
+        return str(obj.project.owner) == str(current_owner_id)
 
 
 class ElementViewSet(viewsets.ModelViewSet):
@@ -42,14 +29,15 @@ class ProjectViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         owner_id = getattr(self.request, 'owner_id', None)
         return Project.objects.filter(owner=owner_id).prefetch_related(
-            'walls',
             'placed_elements__element'
         )
 
     def perform_create(self, serializer):
         owner_id = getattr(self.request, 'owner_id', None)
         sub_data = getattr(self.request, 'subscription_data', None)
-
         sub_id = sub_data.get('id') if sub_data else None
 
-        serializer.save(owner=owner_id, subscription_id=sub_id)
+        serializer.save(
+            owner=owner_id,
+            subscription_id=sub_id
+        )

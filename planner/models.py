@@ -1,5 +1,4 @@
 import uuid
-import math
 from django.db import models
 from django.core.validators import MinValueValidator
 
@@ -11,10 +10,8 @@ class Project(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-
     name = models.CharField(max_length=255)
     owner = models.UUIDField(db_index=True)
-
     status = models.CharField(
         max_length=10,
         choices=STATUS_CHOICES,
@@ -22,12 +19,14 @@ class Project(models.Model):
         db_index=True
     )
 
-    # Размеры в мм (int)
+    # Dimensions in mm
     width = models.PositiveIntegerField(validators=[MinValueValidator(1)])
     height = models.PositiveIntegerField(validators=[MinValueValidator(1)])
 
-    subscription_id = models.UUIDField(null=True, blank=True, editable=False)
+    # New JSON storage for walls
+    walls_data = models.JSONField(default=list, blank=True)
 
+    subscription_id = models.UUIDField(null=True, blank=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -47,38 +46,10 @@ class Project(models.Model):
         return (self.width * self.height) / 1_000_000
 
 
-class Wall(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    project = models.ForeignKey(
-        Project,
-        on_delete=models.CASCADE,
-        related_name='walls'
-    )
-
-    # Координаты в мм
-    x1 = models.IntegerField()
-    y1 = models.IntegerField()
-    x2 = models.IntegerField()
-    y2 = models.IntegerField()
-
-    thickness = models.PositiveIntegerField(
-        default=200,
-        validators=[MinValueValidator(1)]
-    )
-
-    class Meta:
-        indexes = [
-            models.Index(fields=['project']),
-        ]
-
-    @property
-    def length(self):
-        return int(math.sqrt((self.x2 - self.x1) ** 2 + (self.y2 - self.y1) ** 2))
-
-
 class Element(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    type = models.CharField(max_length=50)  # 'sofa', 'table', 'window'
+    name = models.CharField(max_length=100)
+    type = models.CharField(max_length=50)
     width = models.PositiveIntegerField(validators=[MinValueValidator(1)])
     height = models.PositiveIntegerField(validators=[MinValueValidator(1)])
     meta = models.JSONField(default=dict, blank=True)
@@ -98,10 +69,6 @@ class ProjectElement(models.Model):
         on_delete=models.CASCADE,
         related_name='instances'
     )
-
     x = models.IntegerField()
     y = models.IntegerField()
     rotation = models.IntegerField(default=0)
-
-    class Meta:
-        verbose_name = "Placed Element"
