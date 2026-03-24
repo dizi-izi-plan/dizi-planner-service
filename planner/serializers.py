@@ -24,7 +24,6 @@ class ProjectElementSerializer(serializers.ModelSerializer):
 
 
 class ProjectSerializer(serializers.ModelSerializer):
-    area_sq_m = serializers.ReadOnlyField()
     elements = ProjectElementSerializer(
         many=True,
         required=False,
@@ -34,8 +33,8 @@ class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = [
-            'id', 'name', 'status', 'width', 'height',
-            'area_sq_m', 'walls_data', 'elements', 'created_at'
+            'id', 'name', 'width', 'height',
+            'walls_data', 'elements', 'created_at'
         ]
         read_only_fields = ['id', 'created_at']
 

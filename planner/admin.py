@@ -10,8 +10,8 @@ class ProjectElementInline(admin.TabularInline):
 
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ('name', 'owner', 'status', 'created_at')
-    list_filter = ('status', 'created_at')
+    list_display = ('name', 'owner', 'created_at')
+    list_filter = ('created_at',)
     inlines = [ProjectElementInline]
 
 
