@@ -1,4 +1,36 @@
-# API Documentation - Dizi Planner Service
+# Dizi Planner Service
+
+Микросервис для управления планировками интерьеров.
+
+## Установка и настройка
+
+### Требования
+- Python 3.12+
+- [uv](https://docs.astral.sh/uv/)
+- Docker (для локальной БД)
+
+### Первый запуск
+
+```bash
+uv sync                                    # зависимости (создаст .venv)
+uv run pre-commit install                  # pre-commit хук на форматирование
+cp .env.example .env                       # окружение
+docker compose up -d                       # postgres в контейнере
+uv run python src/manage.py migrate        # миграции
+uv run python src/manage.py runserver      # dev-сервер на :8000
+```
+
+### Полезные команды
+
+```bash
+uv run pytest                              # тесты
+uv run ruff format src                     # форматирование
+uv run ruff check src                      # линт
+uv run pre-commit run --all-files          # прогнать хук на всём проекте
+uv run pre-commit autoupdate               # обновить версии хуков
+```
+
+---
 
 Документация эндпоинтов для управления элементами интерьера и дизайн-проектами.
 

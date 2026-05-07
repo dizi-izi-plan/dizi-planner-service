@@ -1,0 +1,20 @@
+volumes:
+  postgres_data:
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: dizi-planner-postgres
+    environment:
+      POSTGRES_DB: planner_db
+      POSTGRES_USER: planner_user
+      POSTGRES_PASSWORD: strong_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U planner_user -d planner_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
