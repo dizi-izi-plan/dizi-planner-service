@@ -1,6 +1,7 @@
 import uuid
-from django.db import models
+
 from django.core.validators import MinValueValidator
+from django.db import models
 
 
 class Project(models.Model):
@@ -21,8 +22,8 @@ class Project(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=['owner']),
-            models.Index(fields=['subscription_id']),
+            models.Index(fields=["owner"]),
+            models.Index(fields=["subscription_id"]),
         ]
         verbose_name = "Project"
         verbose_name_plural = "Projects"
@@ -44,16 +45,8 @@ class Element(models.Model):
 
 
 class ProjectElement(models.Model):
-    project = models.ForeignKey(
-        Project,
-        on_delete=models.CASCADE,
-        related_name='placed_elements'
-    )
-    element = models.ForeignKey(
-        Element,
-        on_delete=models.CASCADE,
-        related_name='instances'
-    )
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="placed_elements")
+    element = models.ForeignKey(Element, on_delete=models.CASCADE, related_name="instances")
     x = models.IntegerField()
     y = models.IntegerField()
     rotation = models.IntegerField(default=0)

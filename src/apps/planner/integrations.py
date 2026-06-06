@@ -1,17 +1,17 @@
-import jwt
 import httpx
-from rest_framework import exceptions
+import jwt
 from django.conf import settings
+from rest_framework import exceptions
 
 
 class AuthServiceHelper:
     @staticmethod
     def get_user_id_from_jwt(auth_header: str) -> str:
         try:
-            token = auth_header.split(' ')[1]
+            token = auth_header.split(" ")[1]
             payload = jwt.decode(token, options={"verify_signature": False})
 
-            user_id = payload.get('sub') or payload.get('user_id')
+            user_id = payload.get("sub") or payload.get("user_id")
             if not user_id:
                 raise exceptions.AuthenticationFailed("ID пользователя не найден в токене")
             return user_id
@@ -26,11 +26,7 @@ class SubscriptionClient:
     def get_subscription_data(cls, auth_header: str) -> dict:
         try:
             with httpx.Client() as client:
-                response = client.get(
-                    cls.URL,
-                    headers={"Authorization": auth_header},
-                    timeout=5.0
-                )
+                response = client.get(cls.URL, headers={"Authorization": auth_header}, timeout=5.0)
                 if response.status_code == 200:
                     return response.json()
                 return None

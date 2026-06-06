@@ -1,0 +1,51 @@
+[project]
+name = "dizi-planner-service"
+version = "0.1.0"
+description = "Dizi Planner Service — управление планировками интерьеров"
+requires-python = ">=3.12"
+dependencies = [
+    "django>=6.0,<7.0",
+    "djangorestframework>=3.16",
+    "django-cors-headers>=4.7",
+    "django-filter>=25.1",
+    "psycopg[binary]>=3.2",
+    "python-dotenv>=1.0",
+    "pyjwt>=2.9",
+    "httpx>=0.28",
+    "gunicorn>=23.0",
+    "whitenoise[brotli]>=6.7",
+    "pillow>=11.0",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.8",
+    "pytest>=8.3",
+    "pytest-django>=4.9",
+    "pre-commit>=4.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src"]
+extend-exclude = ["**/migrations/*"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "B", "UP", "Q"]
+
+[tool.ruff.lint.flake8-quotes]
+inline-quotes = "double"
+multiline-quotes = "double"
+docstring-quotes = "double"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "project.settings"
+pythonpath = ["src"]
+python_files = ["test_*.py", "tests.py"]
