@@ -3,6 +3,15 @@ from rest_framework import permissions
 from .models import Project
 
 
+class HasOwnerId(permissions.BasePermission):
+    """Доступ только при наличии owner_id (валидный внешний JWT)."""
+
+    message = "Требуется авторизация."
+
+    def has_permission(self, request, view):
+        return bool(getattr(request, "owner_id", None))
+
+
 class CheckProjectLimit(permissions.BasePermission):
     message = "Лимит тарифа закончен. Создание проекта невозможно."
 

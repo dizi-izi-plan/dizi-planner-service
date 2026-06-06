@@ -4,6 +4,19 @@ from rest_framework import serializers
 from .models import Element, Project, ProjectElement
 
 
+class GenerateLayoutSerializer(serializers.Serializer):
+    """Входные данные для генерации раскладки.
+
+    Структуру полей глубоко проверяет доменный валидатор
+    (`services.placement.validators.validate_constructor`).
+    """
+
+    room = serializers.DictField()
+    floor_objects = serializers.ListField(child=serializers.DictField())
+    doors = serializers.ListField(child=serializers.DictField(), required=False, default=list)
+    windows = serializers.ListField(child=serializers.DictField(), required=False, default=list)
+
+
 class ElementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Element

@@ -1,0 +1,81 @@
+@startuml
+
+skinparam ArrowColor #AAAAAA
+skinparam LineColor #AAAAAA
+skinparam LineThickness 3
+skinparam ArrowThickness 3
+skinparam Shadowing false
+
+class Core{
+    + get_room()
+    + get_openings()
+    + get_floor_objects()
+    + get_wall_objects()
+    + evaluate_placement()
+    + crossover()
+    + mutate()
+    + greedy_placement()
+    + run_genetic_algorithm()
+}
+
+abstract class Rectangle{
+    + x: float
+    + y: float
+    + width: float
+    + length: float
+    + rotation: float = 0 
+}
+
+abstract class BuildingObject{
+    + id
+    + name
+    + width
+    + length
+    + height
+    + dots: List[Point]
+    + rotation
+    + room_size: tuple
+    + get_corners()
+    + create_rectangle() 
+    + get_distance()
+}
+
+class OpeningObject{
+    + generate_door_random_placement()
+    + uturn()
+}
+
+class WallObject{
+    + run_random_placement() 
+    + move_wall_object()
+}
+
+class FloorObject{
+    + generate_random_placement() 
+}    
+
+class Room{
+
+    + width
+    + length
+    + height
+}
+
+abstract class Point{
+    + x
+    + y
+}
+
+class OpeningObject extends BuildingObject
+class WallObject extends BuildingObject
+class FloorObject extends BuildingObject
+
+OpeningObject <-down- Core
+WallObject <-down- Core
+FloorObject <-down- Core
+Room <--left-- Core
+
+BuildingObject <- Point
+BuildingObject <-left- Rectangle
+
+@enduml

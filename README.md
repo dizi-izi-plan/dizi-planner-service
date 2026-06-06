@@ -132,3 +132,102 @@ uv run pre-commit autoupdate               # обновить версии ху�
 - x, y: Координаты установки верхнего левого угла объекта.
 
 - rotation: Угол поворота в градусах.
+
+---
+
+## 3. Генерация раскладки (Layout Generation)
+
+Автоматическая расстановка мебели в комнате. Эндпоинт **stateless** — ничего не сохраняет в БД, принимает геометрию комнаты и список объектов, возвращает готовую раскладку.
+
+`POST /generate/`
+
+**Авторизация:** управляется флагом `GENERATE_LAYOUT_REQUIRE_AUTH` (env). При `True` требуется Bearer JWT; при `False` эндпоинт открыт (удобно для отладки фронта).
+
+### Формат ответа
+
+Задаётся query-параметром `?format=`:
+
+| Значение | Content-Type | Результат |
+|----------|--------------|-----------|
+| `json` (по умолчанию) | `application/json` | Координаты объектов |
+| `svg` | `image/svg+xml` | Векторная отрисовка |
+| `png` | `image/png` | Растровая отрисовка |
+
+### Тело запроса (Body)
+
+```json
+{
+  "room": {"width": 400, "length": 500, "height": 200},
+  "doors": [
+    {"id": "1", "name": "дверь", "x": 400, "y": 250, "width": 60, "length": 5, "height": 200}
+  ],
+  "windows": [
+    {"id": "3", "name": "окно", "x": 200, "y": 0, "width": 180, "length": 10, "height": 120}
+  ],
+  "floor_objects": [
+    {"id": "1", "name": "Кровать", "tag": "sz", "dimension": "large_furniture", "width": 180, "length": 200, "height": 40},
+    {"id": "2", "name": "Шкаф",    "tag": "wz", "dimension": "large_furniture", "width": 120, "length": 60,  "height": 200},
+    {"id": "3", "name": "Стол",    "tag": "pz", "dimension": "large_furniture", "width": 90,  "length": 60,  "height": 60},
+    {"id": "4", "name": "Стул",    "tag": "sz", "dimension": "medium_furniture", "width": 60, "length": 40,  "height": 30},
+    {"id": "5", "name": "Тумба",   "tag": "sz", "dimension": "medium_furniture", "width": 100, "length": 50, "height": 40},
+    {"id": "6", "name": "Тумба",   "tag": "sz", "dimension": "medium_furniture", "width": 100, "length": 50, "height": 40}
+  ]
+}
+```
+
+Описание полей:
+- `room`: габариты комнаты в сантиметрах (`width`, `length`, `height`).
+- `doors` / `windows`: проёмы (необязательны). `x`, `y` — положение на стене; алгоритм определяет стену по координате.
+- `floor_objects`: мебель для расстановки.
+  - `dimension`: `large_furniture` (формирует зону) или `medium_furniture` (распределяется вокруг крупных).
+  - `tag`: тип зоны (`sz` — сон, `wz` — шкаф, `pz` — туалетный столик).
+
+### Структура ответа (JSON)
+
+```json
+{
+  "room": {"width": 400, "length": 500, "height": 200},
+  "doors": [ ... ],
+  "windows": [ ... ],
+  "furnitures": [
+    {"id": "1", "name": "Кровать", "tag": "sz", "dimension": "large_furniture",
+     "x": 0.0, "y": 328.56, "width": 180, "length": 200, "height": 40, "rotation": 270}
+  ],
+  "electricity_points": [ ... ]
+}
+```
+Координаты `x`, `y` — левый верхний угол объекта, `rotation` — поворот в градусах (0/90/180/270). Розетки (`electricity_points`) генерируются автоматически.
+
+### Коды ответов
+- `200` — успех.
+- `400` — ошибка валидации входных данных (`{"errors": [...]}`) или неподдерживаемый `format`.
+- `422` — данные валидны, но алгоритму не удалось разместить объекты (раскладка рандомизирована — можно повторить запрос).
+- `403` — требуется авторизация.
+
+### Примеры curl
+
+**JSON:**
+```bash
+curl -X POST 'http://localhost:8000/api/v1/generate/' \
+  -H 'Content-Type: application/json' \
+  -d @payload.json
+```
+
+**SVG / PNG в файл:**
+```bash
+curl -X POST 'http://localhost:8000/api/v1/generate/?format=svg' \
+  -H 'Content-Type: application/json' -d @payload.json -o layout.svg
+
+curl -X POST 'http://localhost:8000/api/v1/generate/?format=png' \
+  -H 'Content-Type: application/json' -d @payload.json --output layout.png
+```
+
+**С авторизацией** (если `GENERATE_LAYOUT_REQUIRE_AUTH=True`):
+```bash
+curl -X POST 'http://localhost:8000/api/v1/generate/' \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d @payload.json
+```
+
+> `payload.json` — тело запроса из примера выше.

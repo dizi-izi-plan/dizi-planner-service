@@ -11,6 +11,10 @@ SECRET_KEY = os.getenv("SECRET_KEY", "fallback-secret-key")
 DEBUG = os.getenv("DEBUG", "False") == "True"
 SUBSCRIPTION_SERVICE_URL = os.getenv("SUBSCRIPTION_SERVICE_URL")
 
+# Требовать ли авторизацию для эндпоинта генерации раскладки.
+# Можно временно отключить через env (например, для отладки фронта).
+GENERATE_LAYOUT_REQUIRE_AUTH = os.getenv("GENERATE_LAYOUT_REQUIRE_AUTH", "True") == "True"
+
 ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
 
@@ -48,6 +52,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
+    "URL_FORMAT_OVERRIDE": None,
 }
 
 ROOT_URLCONF = "project.urls"
